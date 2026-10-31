@@ -1,0 +1,17 @@
+# Archivos temporales y de bloqueo de Microsoft Excel
+~$*.xlsx
+~$*.xls
+~$*.xlsm
+*.tmp
+
+# Archivos y cachés de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+
+# Archivos del sistema operativo (Windows / Mac)
+Thumbs.db
+desktop.ini
+.DS_Store
