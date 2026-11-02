@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "saldoInicialBase": 0,
+  "transacciones": [
+    {
+      "id": 1,
+      "fecha": "2026-10-23",
+      "semana": "Semana 4",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Donaciones, Rifas y Colaboraciones",
+      "concepto": "Rifa CERMUN",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 0,
+      "notas": "Colaboración a Lolo Urbina"
+    },
+    {
+      "id": 2,
+      "fecha": "2026-10-27",
+      "semana": "Semana 4",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Café al paso y Desayunos fuera",
+      "concepto": "Starbucks",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 17900,
+      "notas": "Café en Starbucks"
+    },
+    {
+      "id": 3,
+      "fecha": "2026-10-30",
+      "semana": "Semana 5",
+      "tipo": "Ingreso",
+      "categoria": "Sueldo / Salario",
+      "concepto": "Guillermo Mattioli",
+      "medioPago": "Efectivo",
+      "monto": 600000,
+      "notas": "Sueldo mensual"
+    },
+    {
+      "id": 4,
+      "fecha": "2026-10-30",
+      "semana": "Semana 5",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Café al paso y Desayunos fuera",
+      "concepto": "Starbucks",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 10400,
+      "notas": "Café en Starbucks"
+    },
+    {
+      "id": 5,
+      "fecha": "2026-10-30",
+      "semana": "Semana 5",
+      "tipo": "Gasto Variable",
+      "categoria": "Danza, Ballet y Actividades Deportivas",
+      "concepto": "Ballet",
+      "medioPago": "Efectivo",
+      "monto": 210000,
+      "notas": "Deuda Sandra Valentini"
+    },
+    {
+      "id": 6,
+      "fecha": "2026-10-30",
+      "semana": "Semana 5",
+      "tipo": "Gasto Variable",
+      "categoria": "Danza, Ballet y Actividades Deportivas",
+      "concepto": "Ballet",
+      "medioPago": "Efectivo",
+      "monto": 20000,
+      "notas": "Deuda clase particular Olga"
+    },
+    {
+      "id": 7,
+      "fecha": "2026-10-30",
+      "semana": "Semana 5",
+      "tipo": "Gasto Fijo",
+      "categoria": "Suscripciones Digitales (Streaming, Apps)",
+      "concepto": "Meli +",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 20990,
+      "notas": "Suscripción Meli +"
+    }
+  ]
+}

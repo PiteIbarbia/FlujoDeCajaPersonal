@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Flujo de Caja Personal</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="theme-color" content="#1B365D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FlujoCaja">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#1B365D',
+              mid: '#2C4C7C',
+              light: '#EBF3FA',
+              accent: '#2980B9'
+            },
+            flow: {
+              green: '#27AE60',
+              red: '#C0392B',
+              orange: '#D35400'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js & SheetJS (Excel) CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* Mobile Safe Area Padding for iPhone notch */
+    .safe-top { padding-top: env(safe-area-inset-top); }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    /* Hide scrollbars */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans select-none antialiased">
+
+  <!-- TOP HEADER -->
+  <header class="bg-[#1B365D] text-white sticky top-0 z-40 shadow-md safe-top">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center p-1.5 shadow-inner">
+          <img src="./icons/icon.svg" alt="Logo" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight leading-none">Flujo de Caja</h1>
+          <p class="text-[10px] text-blue-200 uppercase tracking-wider font-semibold">Personal & Hogar</p>
+        </div>
+      </div>
+
+      <!-- Month Selector in Header -->
+      <div class="flex items-center space-x-2">
+        <select id="monthSelect" class="bg-white/15 border border-white/20 text-white text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300">
+          <!-- Populated dynamically via JS -->
+        </select>
+        
+        <!-- GitHub Sync Status Pill -->
+        <button id="btnQuickSync" title="Sincronizar con GitHub" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center space-x-1 transition active:scale-95">
+          <span id="syncIndicator" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="hidden sm:inline text-[11px] font-medium" id="syncLabel">GitHub</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-[#152a48] px-4 flex justify-around text-xs font-medium border-t border-white/10 overflow-x-auto no-scrollbar">
+      <button class="nav-tab py-2.5 px-3 border-b-2 border-emerald-400 text-white font-semibold flex items-center space-x-1.5" data-tab="tablero">
+        <span>📊</span><span>Tablero</span>
+      </button>
+      <button class="nav-tab py-2.5 px-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center space-x-1.5" data-tab="movimientos">
+        <span>📝</span><span>Movimientos</span>
+      </button>
+      <button class="nav-tab py-2.5 px-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center space-x-1.5" data-tab="anual">
+        <span>📅</span><span>Consolidado</span>
+      </button>
+      <button class="nav-tab py-2.5 px-3 border-b-2 border-transparent text-slate-300 hover:text-white flex items-center space-x-1.5" data-tab="respaldos">
+        <span>☁️</span><span>Respaldos</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 pb-24 safe-bottom">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: TABLERO DEL MES (DASHBOARD) -->
+    <!-- ========================================== -->
+    <section id="tab-tablero" class="tab-content space-y-4">
+      
+      <!-- KPI CARDS GRID -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <!-- Saldo Inicial -->
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Saldo Inicial</p>
+          <p id="kpiSaldoInicial" class="text-base sm:text-lg font-bold text-slate-700 mt-1">$ 0,00</p>
+          <p class="text-[10px] text-slate-400">Arrastre mes anterior</p>
+        </div>
+
+        <!-- Ingresos Totales -->
+        <div class="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-200/70 shadow-sm">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Total Ingresos</p>
+          <p id="kpiIngresos" class="text-base sm:text-lg font-bold text-emerald-600 mt-1">$ 0,00</p>
+          <p class="text-[10px] text-emerald-600/80">Cobros del mes</p>
+        </div>
+
+        <!-- Gastos Operativos -->
+        <div class="bg-rose-50/70 p-3.5 rounded-2xl border border-rose-200/70 shadow-sm">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-rose-700">Gastos Totales</p>
+          <p id="kpiGastos" class="text-base sm:text-lg font-bold text-rose-600 mt-1">$ 0,00</p>
+          <p class="text-[10px] text-rose-600/80">Fijos + Var + Hormiga</p>
+        </div>
+
+        <!-- Gastos Hormiga (Alerta Fugas) -->
+        <div class="bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/80 shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-amber-800">Gastos Hormiga</p>
+            <span class="text-xs">🐜</span>
+          </div>
+          <p id="kpiHormiga" class="text-base sm:text-lg font-bold text-amber-600 mt-1">$ 0,00</p>
+          <p class="text-[10px] text-amber-700/80">Fugas cotidianas</p>
+        </div>
+
+        <!-- Flujo Neto del Mes -->
+        <div class="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-200/70 shadow-sm">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-blue-800">Flujo Neto</p>
+          <p id="kpiFlujoNeto" class="text-base sm:text-lg font-bold text-blue-700 mt-1">$ 0,00</p>
+          <p class="text-[10px] text-blue-600/80">Ingresos - Egresos</p>
+        </div>
+
+        <!-- Saldo Final Disponible -->
+        <div class="bg-[#1B365D] text-white p-3.5 rounded-2xl shadow-md border border-slate-700">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-blue-200">Saldo Disponible</p>
+          <p id="kpiSaldoFinal" class="text-base sm:text-lg font-bold text-white mt-1">$ 0,00</p>
+          <p class="text-[10px] text-blue-200">Caja + Cuentas</p>
+        </div>
+      </div>
+
+      <!-- BOTONES RÁPIDOS DE FRECUENTES -->
+      <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Carga Rápida en 1 Toque</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="quick-btn px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 flex items-center space-x-1.5 active:scale-95 transition"
+                  data-cat="Café al paso y Desayunos fuera" data-tipo="Gasto Hormiga" data-desc="Starbucks" data-mp="Transferencia / Billetera Virtual (Mercado Pago, etc.)">
+            <span>☕</span><span>Starbucks</span>
+          </button>
+          <button class="quick-btn px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 flex items-center space-x-1.5 active:scale-95 transition"
+                  data-cat="Supermercado y Alimentos del Hogar" data-tipo="Gasto Variable" data-desc="Supermercado" data-mp="Tarjeta de Débito">
+            <span>🛒</span><span>Supermercado</span>
+          </button>
+          <button class="quick-btn px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 flex items-center space-x-1.5 active:scale-95 transition"
+                  data-cat="Danza, Ballet y Actividades Deportivas" data-tipo="Gasto Variable" data-desc="Ballet" data-mp="Efectivo">
+            <span>🩰</span><span>Ballet</span>
+          </button>
+          <button class="quick-btn px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 flex items-center space-x-1.5 active:scale-95 transition"
+                  data-cat="Suscripciones Digitales (Streaming, Apps)" data-tipo="Gasto Fijo" data-desc="Meli +" data-mp="Transferencia / Billetera Virtual (Mercado Pago, etc.)">
+            <span>📦</span><span>Meli +</span>
+          </button>
+          <button class="quick-btn px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 flex items-center space-x-1.5 active:scale-95 transition"
+                  data-cat="Kiosco, Snacks y Golosinas" data-tipo="Gasto Hormiga" data-desc="Kiosco / Snack" data-mp="Efectivo">
+            <span>🍬</span><span>Kiosco</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SEGUIMIENTO SEMANAL DEL MES -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-800">Seguimiento Semana a Semana</h2>
+          <span class="text-xs text-slate-400 font-medium" id="lblSelectedMonthName">Noviembre 2026</span>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                <th class="py-2 px-2.5">Semana</th>
+                <th class="py-2 px-2.5 text-right">Ingresos</th>
+                <th class="py-2 px-2.5 text-right">Gastos</th>
+                <th class="py-2 px-2.5 text-right text-amber-700">Hormiga</th>
+                <th class="py-2 px-2.5 text-right">Flujo Neto</th>
+                <th class="py-2 px-2.5 text-right">Saldo Cierre</th>
+              </tr>
+            </thead>
+            <tbody id="tableWeeklyBody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CHARTS SECTION -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Bar Chart: Weekly Flow -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+          <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Ingresos vs. Gastos Semanales</h3>
+          <div class="h-56">
+            <canvas id="chartWeekly"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut Chart: Distribution -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+          <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Composición del Gasto del Mes</h3>
+          <div class="h-56">
+            <canvas id="chartDistribution"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROL DE PRESUPUESTO POR CATEGORÍA -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+        <h2 class="text-sm font-bold text-slate-800">Presupuesto vs. Gasto Real por Categoría</h2>
+        <div id="categoryBudgetList" class="space-y-2.5">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: REGISTRO DE MOVIMIENTOS -->
+    <!-- ========================================== -->
+    <section id="tab-movimientos" class="tab-content hidden space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <div class="relative flex-1">
+          <input type="text" id="searchInput" placeholder="Buscar por concepto o categoría..." class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <select id="filterType" class="bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 font-medium">
+          <option value="all">Todos los tipos</option>
+          <option value="Ingreso">Ingresos</option>
+          <option value="Gasto Fijo">Gastos Fijos</option>
+          <option value="Gasto Variable">Gastos Variables</option>
+          <option value="Gasto Hormiga">Gastos Hormiga</option>
+          <option value="Ahorro / Inversión">Ahorro</option>
+        </select>
+      </div>
+
+      <!-- Transactions List Container -->
+      <div id="transactionsContainer" class="space-y-2">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CONSOLIDADO ANUAL (15 MESES) -->
+    <!-- ========================================== -->
+    <section id="tab-anual" class="tab-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-800">Consolidado 15 Meses (2026 - 2027)</h2>
+            <p class="text-xs text-slate-500">Desplaza horizontalmente para ver la evolución mes a mes.</p>
+          </div>
+          <button id="btnExportAnnualExcel" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center space-x-1 shadow-sm transition active:scale-95">
+            <span>📊</span><span>Exportar Excel</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table id="tableAnnual" class="w-full text-left text-xs whitespace-nowrap">
+            <!-- Rendered dynamically -->
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: RESPALDOS Y CONFIGURACIÓN -->
+    <!-- ========================================== -->
+    <section id="tab-respaldos" class="tab-content hidden space-y-4">
+      
+      <!-- GITHUB SYNC CARD -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+            🐙
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800">Respaldo Automático en GitHub</h2>
+            <p class="text-xs text-slate-500">Tus datos sincronizados en tu repositorio privado de forma segura.</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Repositorio Vinculado</label>
+            <input type="text" id="ghRepo" value="PiteIbarbia/FlujoDeCajaPersonal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 font-mono text-xs focus:outline-none" readonly>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">GitHub Personal Access Token (PAT)</label>
+            <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+            <p class="text-[11px] text-slate-400 mt-1">El token se guarda únicamente en este dispositivo. Requiere permisos de lectura y escritura en el repositorio (permiso <code>repo</code>).</p>
+          </div>
+
+          <div class="flex gap-2 pt-1">
+            <button id="btnSaveToken" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs active:scale-95 transition">
+              Guardar Token
+            </button>
+            <button id="btnSyncPush" class="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs active:scale-95 transition">
+              Subir a GitHub (Push)
+            </button>
+            <button id="btnSyncPull" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs active:scale-95 transition">
+              Bajar de GitHub (Pull)
+            </button>
+          </div>
+
+          <p id="syncStatusMsg" class="text-[11px] text-slate-500 italic"></p>
+        </div>
+      </div>
+
+      <!-- EXCEL BACKUP CARD -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+            📊
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800">Respaldo en Planilla Excel (.xlsx)</h2>
+            <p class="text-xs text-slate-500">Descarga o importa tu archivo con formato completo en cualquier dispositivo.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <button id="btnExportExcel" class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center space-x-2 shadow-sm transition active:scale-95">
+            <span>📥</span><span>Descargar Excel Completo (.xlsx)</span>
+          </button>
+          
+          <label class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center space-x-2 border border-slate-200 cursor-pointer transition active:scale-95">
+            <span>📤</span><span>Importar desde Excel</span>
+            <input type="file" id="fileImportExcel" accept=".xlsx,.xls" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <!-- LOCAL BACKUP (JSON) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+        <h2 class="text-sm font-bold text-slate-800">Copia de Seguridad Local (JSON)</h2>
+        <div class="flex gap-2">
+          <button id="btnExportJSON" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition active:scale-95">
+            Exportar Archivo JSON
+          </button>
+          <label class="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs text-center border border-slate-200 cursor-pointer transition active:scale-95">
+            Restaurar JSON
+            <input type="file" id="fileImportJSON" accept=".json" class="hidden">
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FLOATING ACTION BUTTON (NUEVO MOVIMIENTO) -->
+  <button id="btnOpenModal" class="fixed bottom-6 right-6 z-50 bg-[#1B365D] hover:bg-[#2C4C7C] text-white p-4 rounded-full shadow-2xl flex items-center space-x-2 active:scale-95 transition-transform border border-white/20">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+    </svg>
+    <span class="font-bold text-sm pr-1">Nuevo</span>
+  </button>
+
+  <!-- MODAL: REGISTRAR / EDITAR MOVIMIENTO -->
+  <div id="modalTransaction" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="modalTitle" class="text-base font-bold text-slate-800">Registrar Nuevo Movimiento</h3>
+        <button id="btnCloseModal" class="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+          ✕
+        </button>
+      </div>
+
+      <form id="formTransaction" class="space-y-3.5 text-xs">
+        <input type="hidden" id="txId">
+
+        <!-- Fecha -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Fecha</label>
+          <input type="date" id="txFecha" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Tipo -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Tipo de Movimiento</label>
+          <select id="txTipo" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            <option value="Ingreso">🟢 Ingreso</option>
+            <option value="Gasto Fijo">🔴 Gasto Fijo</option>
+            <option value="Gasto Variable" selected>🟠 Gasto Variable</option>
+            <option value="Gasto Hormiga">🐜 Gasto Hormiga (Fuga)</option>
+            <option value="Ahorro / Inversión">🔵 Ahorro / Inversión</option>
+          </select>
+        </div>
+
+        <!-- Categoría -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Categoría</label>
+          <select id="txCategoria" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Concepto / Detalle -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Concepto / Detalle</label>
+          <input type="text" id="txConcepto" placeholder="Ej: Starbucks, Ballet, Supermercado..." required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Medio de Pago -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Medio de Pago</label>
+          <select id="txMedioPago" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="Transferencia / Billetera Virtual (Mercado Pago, etc.)">Transferencia / Billetera Virtual (Mercado Pago)</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+            <option value="Cuenta Bancaria Directa">Cuenta Bancaria Directa</option>
+          </select>
+        </div>
+
+        <!-- Monto -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Monto ($)</label>
+          <input type="number" step="0.01" id="txMonto" placeholder="0.00" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Notas -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Notas / Justificación</label>
+          <input type="text" id="txNotas" placeholder="Opcional..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#1B365D] hover:bg-[#2C4C7C] text-white font-bold text-xs shadow-md transition active:scale-95">
+            Guardar Movimiento
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script src="./app.js"></script>
+
+</body>
+</html>

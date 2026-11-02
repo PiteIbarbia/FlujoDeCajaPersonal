@@ -1,0 +1,18 @@
+{
+  "name": "Flujo de Caja Personal",
+  "short_name": "FlujoCaja",
+  "description": "Control financiero personal, seguimiento de gastos cotidianos y flujo de caja multi-anual.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#1B365D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
