@@ -1,8 +1,41 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-04T01:18:48.026Z",
+  "lastUpdated": "2026-11-04T01:21:38.146Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 10,
+      "fecha": "2026-11-02",
+      "semana": "Semana 1",
+      "tipo": "Gasto Fijo",
+      "categoria": "Suscripciones Digitales (Streaming, Apps)",
+      "concepto": "Spotify",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 5957,
+      "notas": ""
+    },
+    {
+      "id": 9,
+      "fecha": "2026-11-02",
+      "semana": "Semana 1",
+      "tipo": "Gasto Fijo",
+      "categoria": "Internet, Telefonía y Cable",
+      "concepto": "Boleta celular",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 30500,
+      "notas": "Pago del celular 2 líneas CLARO"
+    },
+    {
+      "id": 8,
+      "fecha": "2026-11-02",
+      "semana": "Semana 1",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Compras Impulsivas / Antojos",
+      "concepto": "Cargador inalámbrico",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 26399.2,
+      "notas": "Cargador inalámbrico en CLARO"
+    },
     {
       "id": 1,
       "fecha": "2026-10-23",
