@@ -774,21 +774,12 @@ function initBackupEvents() {
 
   if (state.githubToken) {
     ghTokenInput.value = state.githubToken;
-    updateSyncStatus('GitHub listo');
+    updateSyncStatus('GitHub listo', true);
   }
 
-  btnSaveToken.addEventListener('click', () => {
+  btnSaveToken.addEventListener('click', async () => {
     const tok = ghTokenInput.value.trim();
-    if (tok) {
-      state.githubToken = tok;
-      localStorage.setItem('gh_token', tok);
-      updateSyncStatus('Token guardado');
-      alert('Token de GitHub guardado en este dispositivo.');
-    } else {
-      localStorage.removeItem('gh_token');
-      state.githubToken = '';
-      updateSyncStatus('Sin token');
-    }
+    await verifyAndSaveToken(tok);
   });
 
   btnPush.addEventListener('click', () => syncPushGitHub(false));
@@ -824,9 +815,60 @@ function updateSyncStatus(msg, isSuccess = true) {
   if (statusMsg) statusMsg.textContent = `Estado: ${msg} (${new Date().toLocaleTimeString()})`;
 }
 
+// Verify token by checking access to the repository
+async function verifyAndSaveToken(token) {
+  token = (token || '').trim();
+  if (!token) {
+    localStorage.removeItem('gh_token');
+    state.githubToken = '';
+    updateSyncStatus('Sin token', false);
+    alert('Token eliminado.');
+    return;
+  }
+
+  updateSyncStatus('Verificando...', true);
+
+  try {
+    const url = `https://api.github.com/repos/${state.githubRepo}?t=${Date.now()}`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      cache: 'no-store'
+    });
+
+    if (res.ok) {
+      const repoData = await res.json();
+      state.githubToken = token;
+      localStorage.setItem('gh_token', token);
+      updateSyncStatus('GitHub conectado', true);
+      alert(`✅ ¡Token verificado con éxito!\n\nConectado a ${repoData.full_name} (${repoData.private ? 'Repositorio Privado' : 'Público'}).\nYa puedes subir y bajar tus datos.`);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      updateSyncStatus('Error Token', false);
+      if (res.status === 401) {
+        alert('❌ Error 401 (Credenciales inválidas):\nEl token ingresado no es válido o está vencido. Asegúrate de copiarlo completo sin espacios.');
+      } else if (res.status === 404) {
+        alert(`❌ Error 404 (No encontrado):\nGitHub no permite acceder al repositorio "${state.githubRepo}".\n\nComo tu repositorio es Privado, esto significa que el token no tiene el permiso necesario:\n• Si creaste un Token Classic: debes marcar la casilla "repo".\n• Si creaste un Token Fine-Grained: debes seleccionar el repositorio "FlujoDeCajaPersonal" y dar permiso de Contents (Read & write).`);
+      } else {
+        alert(`❌ Error ${res.status}: ${err.message || 'No se pudo conectar a GitHub'}`);
+      }
+    }
+  } catch (e) {
+    console.error('Error verifying token:', e);
+    updateSyncStatus('Error Red', false);
+    alert('❌ Error de conexión al verificar el token con GitHub.');
+  }
+}
+
 // Push local data to GitHub repository
 async function syncPushGitHub(isSilent = false) {
-  if (!state.githubToken) return;
+  const token = (state.githubToken || '').trim();
+  if (!token) {
+    if (!isSilent) alert('Configura y guarda tu token de GitHub en la pestaña "Respaldos" primero.');
+    return;
+  }
 
   updateSyncStatus('Subiendo...', true);
 
@@ -835,15 +877,21 @@ async function syncPushGitHub(isSilent = false) {
     
     // 1. Get current SHA if file exists
     let sha = '';
-    const getRes = await fetch(url, {
+    const getRes = await fetch(`${url}?t=${Date.now()}`, {
       headers: {
-        'Authorization': `token ${state.githubToken}`,
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'
-      }
+      },
+      cache: 'no-store'
     });
+
     if (getRes.ok) {
       const fileData = await getRes.json();
       sha = fileData.sha;
+    } else if (getRes.status === 401) {
+      updateSyncStatus('Error 401', false);
+      if (!isSilent) alert('❌ Error 401 (Token inválido o expirado). Revisa el token en la pestaña Respaldos.');
+      return;
     }
 
     // 2. Prepare payload
@@ -853,18 +901,26 @@ async function syncPushGitHub(isSilent = false) {
       saldoInicialBase: state.saldoInicialBase,
       transacciones: state.transactions
     };
-    const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadData, null, 2))));
+    const jsonStr = JSON.stringify(payloadData, null, 2);
+
+    // Safe UTF-8 to base64 encoding
+    const utf8Bytes = new TextEncoder().encode(jsonStr);
+    let binaryStr = '';
+    for (let i = 0; i < utf8Bytes.length; i++) {
+      binaryStr += String.fromCharCode(utf8Bytes[i]);
+    }
+    const contentBase64 = btoa(binaryStr);
 
     // 3. Put commit to GitHub
     const putRes = await fetch(url, {
       method: 'PUT',
       headers: {
-        'Authorization': `token ${state.githubToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'Accept': 'application/vnd.github.v3+json'
       },
       body: JSON.stringify({
-        message: `Backup: Sincronización automática de movimientos [skip ci]`,
+        message: `Backup: Sincronización de movimientos [skip ci]`,
         content: contentBase64,
         sha: sha || undefined
       })
@@ -874,38 +930,47 @@ async function syncPushGitHub(isSilent = false) {
       updateSyncStatus('GitHub al día', true);
       if (!isSilent) alert('✅ Respaldo exitoso en GitHub.');
     } else {
-      const err = await putRes.json();
+      const err = await putRes.json().catch(() => ({}));
       updateSyncStatus('Error GitHub', false);
-      if (!isSilent) alert(`Error al respaldar en GitHub: ${err.message}`);
+      if (!isSilent) alert(`❌ Error ${putRes.status} al respaldar en GitHub: ${err.message || 'Error desconocido'}`);
     }
   } catch (err) {
     console.error('GitHub Push error:', err);
     updateSyncStatus('Error Red', false);
-    if (!isSilent) alert('Error de conexión al sincronizar con GitHub.');
+    if (!isSilent) alert('❌ Error de conexión al sincronizar con GitHub.');
   }
 }
 
 // Pull remote data from GitHub repository
 async function syncPullGitHub() {
-  if (!state.githubToken) {
-    alert('Ingresa y guarda tu token de GitHub primero.');
+  const token = (state.githubToken || '').trim();
+  if (!token) {
+    alert('Ingresa y guarda tu token de GitHub en la pestaña "Respaldos" primero.');
     return;
   }
 
   updateSyncStatus('Descargando...', true);
 
   try {
-    const url = `https://api.github.com/repos/${state.githubRepo}/contents/data/transacciones.json`;
+    const url = `https://api.github.com/repos/${state.githubRepo}/contents/data/transacciones.json?t=${Date.now()}`;
     const res = await fetch(url, {
       headers: {
-        'Authorization': `token ${state.githubToken}`,
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'
-      }
+      },
+      cache: 'no-store'
     });
 
     if (res.ok) {
       const fileData = await res.json();
-      const decodedJson = decodeURIComponent(escape(atob(fileData.content)));
+      // Handle base64 decoding with utf-8 and clean newlines
+      const cleanBase64 = fileData.content.replace(/\s/g, '');
+      const binaryStr = atob(cleanBase64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      const decodedJson = new TextDecoder('utf-8').decode(bytes);
       const parsed = JSON.parse(decodedJson);
 
       if (parsed.transacciones && Array.isArray(parsed.transacciones)) {
@@ -917,15 +982,24 @@ async function syncPullGitHub() {
         renderAnnualConsolidated();
         updateSyncStatus('Descargado', true);
         alert(`✅ Sincronización completa: ${state.transactions.length} movimientos cargados desde GitHub.`);
+      } else {
+        alert('El archivo en GitHub no tiene el formato esperado.');
       }
     } else {
+      const err = await res.json().catch(() => ({}));
       updateSyncStatus('Error GitHub', false);
-      alert('No se pudo encontrar el archivo de respaldo en GitHub o el token es inválido.');
+      if (res.status === 401) {
+        alert('❌ Error 401 (Credenciales inválidas):\nEl token ingresado no es válido o está vencido. Genera uno nuevo en github.com/settings/tokens.');
+      } else if (res.status === 404) {
+        alert(`❌ Error 404 (No encontrado):\nGitHub no permite acceder al archivo en el repositorio "${state.githubRepo}".\n\nCausas más frecuentes:\n1. Tu repositorio es Privado y el token no tiene el permiso "repo" marcado.\n2. Si creaste un token Fine-Grained, asegúrate de haberle dado acceso a este repositorio con permiso "Contents: Read & write".`);
+      } else {
+        alert(`❌ Error ${res.status}: ${err.message || 'No se pudo descargar desde GitHub'}`);
+      }
     }
   } catch (err) {
     console.error('GitHub Pull error:', err);
     updateSyncStatus('Error Red', false);
-    alert('Error al descargar datos desde GitHub.');
+    alert('❌ Error de conexión al descargar datos desde GitHub.');
   }
 }
 
