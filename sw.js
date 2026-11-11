@@ -1,56 +1,43 @@
-const CACHE_NAME = 'flujo-caja-v1';
+const CACHE_NAME = 'flujo-caja-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './app.js',
   './manifest.json',
-  './icons/icon.svg',
-  './data/transacciones.json'
+  './icons/icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('Some cache assets failed to load:', err);
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) => Promise.all(
+      keys.map((k) => k !== CACHE_NAME && caches.delete(k))
+    ))
   );
   self.clients.claim();
 });
 
+// Network-first strategy for app logic and assets, falling back to cache if offline
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
+  
+  // Do not intercept external APIs (e.g. GitHub API)
+  if (event.request.url.includes('api.github.com')) return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
         }
         return networkResponse;
-      }).catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });

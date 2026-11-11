@@ -79,6 +79,29 @@ const formatMoney = (num) => {
   }).format(num || 0);
 };
 
+// Toast notifications
+function showToast(message, type = 'info') {
+  let toast = document.getElementById('appToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'appToast';
+    document.body.appendChild(toast);
+  }
+
+  let bgClass = 'bg-slate-800 text-white';
+  if (type === 'success') bgClass = 'bg-emerald-600 text-white';
+  else if (type === 'warning') bgClass = 'bg-amber-600 text-white';
+  else if (type === 'error') bgClass = 'bg-rose-600 text-white';
+
+  toast.className = `fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold transition-all duration-300 pointer-events-none max-w-[90vw] text-center ${bgClass} opacity-100 transform translate-y-0`;
+  toast.textContent = message;
+
+  setTimeout(() => {
+    toast.classList.remove('opacity-100', 'translate-y-0');
+    toast.classList.add('opacity-0', '-translate-y-2');
+  }, 4000);
+}
+
 // Calculate Week Number of the Month
 const getWeekOfMonth = (dateStr) => {
   const day = parseInt(dateStr.split('-')[2], 10);
@@ -102,6 +125,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderDashboard();
   renderTransactionsList();
   renderAnnualConsolidated();
+
+  // Auto-sync with GitHub on startup if token is configured
+  if (state.githubToken) {
+    syncPullGitHub(true);
+  }
 
   // Register Service Worker for offline PWA
   if ('serviceWorker' in navigator) {
@@ -344,7 +372,10 @@ function saveTransactionFromForm() {
 
   // Trigger background GitHub auto-sync if token is set
   if (state.githubToken) {
+    showToast('⏳ Subiendo movimiento a GitHub...');
     syncPushGitHub(true);
+  } else {
+    showToast('💾 Guardado en este dispositivo. Para sincronizar con la PC, ingresa tu Token en Respaldos.', 'warning');
   }
 }
 
@@ -928,24 +959,27 @@ async function syncPushGitHub(isSilent = false) {
 
     if (putRes.ok) {
       updateSyncStatus('GitHub al día', true);
+      showToast('✅ Sincronizado con GitHub con éxito', 'success');
       if (!isSilent) alert('✅ Respaldo exitoso en GitHub.');
     } else {
       const err = await putRes.json().catch(() => ({}));
       updateSyncStatus('Error GitHub', false);
+      showToast(`⚠️ No se pudo subir a GitHub (${putRes.status})`, 'error');
       if (!isSilent) alert(`❌ Error ${putRes.status} al respaldar en GitHub: ${err.message || 'Error desconocido'}`);
     }
   } catch (err) {
     console.error('GitHub Push error:', err);
     updateSyncStatus('Error Red', false);
+    showToast('❌ Error de conexión al sincronizar con GitHub', 'error');
     if (!isSilent) alert('❌ Error de conexión al sincronizar con GitHub.');
   }
 }
 
 // Pull remote data from GitHub repository
-async function syncPullGitHub() {
+async function syncPullGitHub(isSilent = false) {
   const token = (state.githubToken || '').trim();
   if (!token) {
-    alert('Ingresa y guarda tu token de GitHub en la pestaña "Respaldos" primero.');
+    if (!isSilent) alert('Ingresa y guarda tu token de GitHub en la pestaña "Respaldos" primero.');
     return;
   }
 
@@ -981,25 +1015,29 @@ async function syncPullGitHub() {
         renderTransactionsList();
         renderAnnualConsolidated();
         updateSyncStatus('Descargado', true);
-        alert(`✅ Sincronización completa: ${state.transactions.length} movimientos cargados desde GitHub.`);
+        if (!isSilent) {
+          alert(`✅ Sincronización completa: ${state.transactions.length} movimientos cargados desde GitHub.`);
+        } else {
+          showToast(`✅ ${state.transactions.length} movimientos sincronizados desde GitHub`, 'success');
+        }
       } else {
-        alert('El archivo en GitHub no tiene el formato esperado.');
+        if (!isSilent) alert('El archivo en GitHub no tiene el formato esperado.');
       }
     } else {
       const err = await res.json().catch(() => ({}));
       updateSyncStatus('Error GitHub', false);
       if (res.status === 401) {
-        alert('❌ Error 401 (Credenciales inválidas):\nEl token ingresado no es válido o está vencido. Genera uno nuevo en github.com/settings/tokens.');
+        if (!isSilent) alert('❌ Error 401 (Credenciales inválidas):\nEl token ingresado no es válido o está vencido. Genera uno nuevo en github.com/settings/tokens.');
       } else if (res.status === 404) {
-        alert(`❌ Error 404 (No encontrado):\nGitHub no permite acceder al archivo en el repositorio "${state.githubRepo}".\n\nCausas más frecuentes:\n1. Tu repositorio es Privado y el token no tiene el permiso "repo" marcado.\n2. Si creaste un token Fine-Grained, asegúrate de haberle dado acceso a este repositorio con permiso "Contents: Read & write".`);
+        if (!isSilent) alert(`❌ Error 404 (No encontrado):\nGitHub no permite acceder al archivo en el repositorio "${state.githubRepo}".\n\nCausas más frecuentes:\n1. Tu repositorio es Privado y el token no tiene el permiso "repo" marcado.\n2. Si creaste un token Fine-Grained, asegúrate de haberle dado acceso a este repositorio con permiso "Contents: Read & write".`);
       } else {
-        alert(`❌ Error ${res.status}: ${err.message || 'No se pudo descargar desde GitHub'}`);
+        if (!isSilent) alert(`❌ Error ${res.status}: ${err.message || 'No se pudo descargar desde GitHub'}`);
       }
     }
   } catch (err) {
     console.error('GitHub Pull error:', err);
     updateSyncStatus('Error Red', false);
-    alert('❌ Error de conexión al descargar datos desde GitHub.');
+    if (!isSilent) alert('❌ Error de conexión al descargar datos desde GitHub.');
   }
 }
 
