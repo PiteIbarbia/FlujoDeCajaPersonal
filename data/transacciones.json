@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-11T02:10:42.249Z",
+  "lastUpdated": "2026-11-11T22:07:27.104Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 16,
+      "fecha": "2026-11-11",
+      "semana": "Semana 2",
+      "tipo": "Ingreso",
+      "categoria": "Otros Ingresos",
+      "concepto": "Router",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 75000,
+      "notas": "Router TP Link"
+    },
     {
       "id": 15,
       "fecha": "2026-11-11",
