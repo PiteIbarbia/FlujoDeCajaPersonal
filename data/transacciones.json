@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-11T02:05:49.950Z",
+  "lastUpdated": "2026-11-11T02:09:52.143Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 14,
+      "fecha": "2026-11-08",
+      "semana": "Semana 2",
+      "tipo": "Gasto Fijo",
+      "categoria": "Suscripciones Digitales (Streaming, Apps)",
+      "concepto": "Google",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 2595,
+      "notas": "Google"
+    },
     {
       "id": 13,
       "fecha": "2026-11-11",
