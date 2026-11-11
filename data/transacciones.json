@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-11T02:09:52.143Z",
+  "lastUpdated": "2026-11-11T02:10:42.249Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 15,
+      "fecha": "2026-11-11",
+      "semana": "Semana 2",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Café al paso y Desayunos fuera",
+      "concepto": "Café",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 6700,
+      "notas": "The Coffee Store"
+    },
     {
       "id": 14,
       "fecha": "2026-11-08",
