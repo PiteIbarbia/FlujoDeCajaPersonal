@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-11T02:01:53.627Z",
+  "lastUpdated": "2026-11-11T02:03:39.123Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 12,
+      "fecha": "2026-11-11",
+      "semana": "Semana 2",
+      "tipo": "Gasto Variable",
+      "categoria": "Danza, Ballet y Actividades Deportivas",
+      "concepto": "Ballet",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 20000,
+      "notas": "Clase particulares Olga"
+    },
     {
       "id": 11,
       "fecha": "2026-11-04",
