@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-14T20:43:59.438Z",
+  "lastUpdated": "2026-11-14T20:44:33.403Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 20,
+      "fecha": "2026-11-13",
+      "semana": "Semana 2",
+      "tipo": "Gasto Variable",
+      "categoria": "Delivery y Comida Rápida",
+      "concepto": "Subway",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 16880,
+      "notas": "Subway"
+    },
     {
       "id": 19,
       "fecha": "2026-11-13",
