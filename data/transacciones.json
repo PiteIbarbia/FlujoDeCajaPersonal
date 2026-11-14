@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-14T20:44:33.403Z",
+  "lastUpdated": "2026-11-14T20:45:09.281Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 21,
+      "fecha": "2026-11-13",
+      "semana": "Semana 2",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Café al paso y Desayunos fuera",
+      "concepto": "Havanna",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 8700,
+      "notas": "Café en Havanna"
+    },
     {
       "id": 20,
       "fecha": "2026-11-13",
