@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-14T20:45:09.281Z",
+  "lastUpdated": "2026-11-15T01:19:04.749Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 22,
+      "fecha": "2026-11-15",
+      "semana": "Semana 3",
+      "tipo": "Ingreso",
+      "categoria": "Otros Ingresos",
+      "concepto": "Heladera",
+      "medioPago": "Cuenta Bancaria Directa",
+      "monto": 30000,
+      "notas": "Compra heladera Tomi Rivero"
+    },
     {
       "id": 21,
       "fecha": "2026-11-13",
