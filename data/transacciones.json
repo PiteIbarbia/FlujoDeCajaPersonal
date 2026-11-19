@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-15T01:19:04.749Z",
+  "lastUpdated": "2026-11-19T13:40:18.623Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 23,
+      "fecha": "2026-11-19",
+      "semana": "Semana 3",
+      "tipo": "Ingreso",
+      "categoria": "Otros Ingresos",
+      "concepto": "Ahorro",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 1625.68,
+      "notas": "Ahorro"
+    },
     {
       "id": 22,
       "fecha": "2026-11-15",
