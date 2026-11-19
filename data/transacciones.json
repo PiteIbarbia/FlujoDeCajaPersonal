@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-19T14:10:31.107Z",
+  "lastUpdated": "2026-11-19T14:12:55.698Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 26,
+      "fecha": "2026-11-14",
+      "semana": "Semana 2",
+      "tipo": "Gasto Variable",
+      "categoria": "Delivery y Comida Rápida",
+      "concepto": "Hamburguesa",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 17000,
+      "notas": ""
+    },
     {
       "id": 25,
       "fecha": "2026-11-19",
