@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-19T14:12:55.698Z",
+  "lastUpdated": "2026-11-19T14:13:50.483Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 27,
+      "fecha": "2026-11-17",
+      "semana": "Semana 3",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Propinas y Pequeños Gastos en Efectivo",
+      "concepto": "General",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 20000,
+      "notas": ""
+    },
     {
       "id": 26,
       "fecha": "2026-11-14",
