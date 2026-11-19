@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-19T14:18:10.061Z",
+  "lastUpdated": "2026-11-19T15:26:25.681Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 29,
+      "fecha": "2026-11-19",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Supermercado y Alimentos del Hogar",
+      "concepto": "Almacen",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 22900,
+      "notas": ""
+    },
     {
       "id": 28,
       "fecha": "2026-11-17",
