@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-19T13:40:18.623Z",
+  "lastUpdated": "2026-11-19T14:08:49.628Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 24,
+      "fecha": "2026-11-19",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Transporte y Combustible",
+      "concepto": "SUBE",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 10000,
+      "notas": "Carga SUBE"
+    },
     {
       "id": 23,
       "fecha": "2026-11-19",
