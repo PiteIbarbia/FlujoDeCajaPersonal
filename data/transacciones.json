@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-19T14:09:47.180Z",
+  "lastUpdated": "2026-11-19T14:10:31.107Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 25,
+      "fecha": "2026-11-19",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Delivery y Comida Rápida",
+      "concepto": "McDonald's",
+      "medioPago": "Transferencia / Billetera Virtual (Mercado Pago, etc.)",
+      "monto": 24500,
+      "notas": ""
+    },
     {
       "id": 24,
       "fecha": "2026-11-16",
