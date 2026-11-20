@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-20T13:23:41.986Z",
+  "lastUpdated": "2026-11-20T13:24:12.761Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 33,
+      "fecha": "2026-11-19",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Salidas, Bares y Restaurantes",
+      "concepto": "Asado",
+      "medioPago": "Cuenta Bancaria Directa",
+      "monto": 15000,
+      "notas": "Asado Tomi Rivero"
+    },
     {
       "id": 32,
       "fecha": "2026-11-19",
