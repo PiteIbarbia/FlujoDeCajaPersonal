@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-20T13:24:12.761Z",
+  "lastUpdated": "2026-11-20T13:24:39.795Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 34,
+      "fecha": "2026-11-20",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Danza, Ballet y Actividades Deportivas",
+      "concepto": "Saltos ornamentales",
+      "medioPago": "Cuenta Bancaria Directa",
+      "monto": 15000,
+      "notas": "Clase prueba"
+    },
     {
       "id": 33,
       "fecha": "2026-11-19",
