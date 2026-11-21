@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-21T13:04:32.390Z",
+  "lastUpdated": "2026-11-21T13:05:14.786Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 36,
+      "fecha": "2026-11-21",
+      "semana": "Semana 3",
+      "tipo": "Gasto Hormiga",
+      "categoria": "Café al paso y Desayunos fuera",
+      "concepto": "Starbucks",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 10400,
+      "notas": "Café en Starbucks"
+    },
     {
       "id": 35,
       "fecha": "2026-11-20",
