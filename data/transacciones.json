@@ -1,8 +1,19 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-20T13:24:39.795Z",
+  "lastUpdated": "2026-11-21T13:04:32.390Z",
   "saldoInicialBase": 0,
   "transacciones": [
+    {
+      "id": 35,
+      "fecha": "2026-11-20",
+      "semana": "Semana 3",
+      "tipo": "Gasto Variable",
+      "categoria": "Delivery y Comida Rápida",
+      "concepto": "McDonald's",
+      "medioPago": "Tarjeta de Débito",
+      "monto": 26000,
+      "notas": "Combo McDonald's"
+    },
     {
       "id": 34,
       "fecha": "2026-11-20",
