@@ -1,12 +1,12 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-11-22T23:17:30.863Z",
+  "lastUpdated": "2026-11-22T23:17:41.547Z",
   "saldoInicialBase": 0,
   "transacciones": [
     {
       "id": 38,
-      "fecha": "2026-11-22",
-      "semana": "Semana 4",
+      "fecha": "2026-11-21",
+      "semana": "Semana 3",
       "tipo": "Gasto Variable",
       "categoria": "Delivery y Comida Rápida",
       "concepto": "Daniel",
